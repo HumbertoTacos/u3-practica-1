@@ -40,9 +40,10 @@ class _HoyScreenState extends State<HoyScreen> {
       }
     }).toList();
 
+
     citasFiltradas.sort((a, b) {
-      final fechaA = DateFormat('yyyy-MM-dd hh:mm').parse('${a.fecha} ${a.hora}');
-      final fechaB = DateFormat('yyyy-MM-dd hh:mm').parse('${b.fecha} ${b.hora}');
+      final fechaA = DateFormat('yyyy-MM-dd HH:mm').parse('${a.fecha} ${a.hora}');
+      final fechaB = DateFormat('yyyy-MM-dd HH:mm').parse('${b.fecha} ${b.hora}');
       return fechaA.compareTo(fechaB);
     });
 
@@ -61,7 +62,7 @@ class _HoyScreenState extends State<HoyScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _cargarCitas, // Botón para refrescar manualmente
+            onPressed: _cargarCitas,
           ),
         ],
       ),

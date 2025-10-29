@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:u3_ejercicio2_tablasconforanea/data/Persona.dart';
 import 'package:u3_ejercicio2_tablasconforanea/data/baseDatosForaneas.dart';
 
@@ -40,7 +41,6 @@ class _AddEditAmigoScreenState extends State<AddEditAmigoScreen> {
         final nuevoAmigo = Persona(nombre: nombre, telefono: telefono);
         await DB.insertarPersona(nuevoAmigo);
       } else {
-        // Actualizar amigo existente
         final amigoActualizado = Persona(nombre :nombre, telefono:telefono, IDPERSONA:  widget.amigo!.IDPERSONA);
         await DB.actualizarPersona(amigoActualizado);
       }
@@ -85,6 +85,9 @@ class _AddEditAmigoScreenState extends State<AddEditAmigoScreen> {
                   prefixIcon: Icon(Icons.phone),
                 ),
                 keyboardType: TextInputType.phone,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.digitsOnly
+                ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Por favor, ingresa un teléfono';

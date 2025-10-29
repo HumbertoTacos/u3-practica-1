@@ -139,7 +139,21 @@ class _CitasScreenState extends State<CitasScreen> {
               },
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _mostrarFormularioParaCita(),
+        onPressed: () async {
+          final amigos = await DB.obtenerPersonas();
+          if (amigos.isEmpty) {
+            ScaffoldMessenger.of(context)
+              ..removeCurrentSnackBar()
+              ..showSnackBar(
+                const SnackBar(
+                  content: Text('Debes registrar al menos un amigo para poder agendar una cita.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+          } else {
+            _mostrarFormularioParaCita();
+          }
+        },
         backgroundColor: Colors.indigo,
         child: const Icon(Icons.add, color: Colors.white),
       ),
