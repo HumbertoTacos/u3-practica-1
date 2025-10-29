@@ -1,72 +1,90 @@
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'Persona.dart';
 import 'Cita.dart';
+import 'CitaConNombre.dart';
 
 class DB {
-  static Future<Database> _conectarDB() async{ //esta linea sirve para conectar la base de datos
-    return openDatabase( //esta linea sirve para abrir la base de datos
-      join(await getDatabasesPath(), 'ejercicio2.db'),//esta linea sirve para crear la base de datos
-      version: 1, //esta linea sirve para crear la version de la base de datos
-      onConfigure: (db){
-        return db.execute('PRAGMA foreign_keys = ON'); //esta linea sirve para habilitar las llaves foraneas en la base de datos
-      }, //esta linea sirve para configurar la base de datos
-      onCreate: (db, version) async{
+  static Future<Database> _conectarDB() async {
+    return openDatabase(
+      join(await getDatabasesPath(), 'ejercicio2.db'),
+      version: 1,
+      onConfigure: (db) {
+        return db.execute('PRAGMA foreign_keys = ON');
+      },
+      onCreate: (db, version) async {
         await db.execute("CREATE TABLE PERSONA( IDPERSONA INTEGER PRIMARY KEY AUTOINCREMENT, NOMBRE TEXT, TELEFONO TEXT)");
-        await db.execute("CREATE TABLE CITA( IDCITA INTEGER PRIMARY KEY AUTOINCREMENT, LUGAR TEXT, FECHA TEXT, HORA TEXT,  IDPERSONA INTEGER, FOREIGN KEY(IDPERSONA) REFERENCES PERSONA(IDPERSONA) ON DELETE CASCADE ON UPDATE CASCADE)");
-      } ,//esta linea sirve para crear la tabla de la base de datos
+        await db.execute("CREATE TABLE CITA( IDCITA INTEGER PRIMARY KEY AUTOINCREMENT, LUGAR TEXT, FECHA TEXT, HORA TEXT, ANOTACIONES TEXT,  IDPERSONA INTEGER, FOREIGN KEY(IDPERSONA) REFERENCES PERSONA(IDPERSONA) ON DELETE CASCADE ON UPDATE CASCADE)");
+      },
     );
   }
 
   static Future<int> insertarPersona(Persona p) async {
     final db = await DB._conectarDB();
     return await db.insert('PERSONA', p.toJSON());
-
   }
 
   static Future<int> insertarCita(Cita c) async {
     final db = await DB._conectarDB();
     return await db.insert('CITA', c.toJSON());
-
   }
+
   static Future<List<Persona>> obtenerPersonas() async {
     final db = await DB._conectarDB();
     final List<Map<String, dynamic>> maps = await db.query('PERSONA');
     return List.generate(maps.length, (i) {
       return Persona(
-        maps[i]['NOMBRE'],
-        maps[i]['TELEFONO'],
-        maps[i]['IDPERSONA'],
+        IDPERSONA: maps[i]['IDPERSONA'],
+        nombre: maps[i]['NOMBRE'],
+        telefono: maps[i]['TELEFONO'],
       );
     });
   }
 
   static Future<List<Cita>> obtenerCitas() async {
-  final db = await DB._conectarDB();
-  final List<Map<String, dynamic>> maps = await db.query('CITA');
-  return List.generate(maps.length, (i) {
-    return Cita(
-      maps[i]['LUGAR'],
-      maps[i]['FECHA'],
-      maps[i]['HORA'],
-      maps[i]['ANOTACIONES'],
-      maps[i]['IDPERSONA'],
-      maps[i]['IDCITA'],
-    );
-  });
-}
+    final db = await DB._conectarDB();
+    final List<Map<String, dynamic>> maps = await db.query('CITA');
+    return List.generate(maps.length, (i) {
+      return Cita(
+        idcita: maps[i]['IDCITA'],
+        lugar: maps[i]['LUGAR'],
+        fecha: maps[i]['FECHA'],
+        hora: maps[i]['HORA'],
+        anotaciones: maps[i]['ANOTACIONES'],
+        idpersona: maps[i]['IDPERSONA'],
+      );
+    });
+  }
+
+  static Future<List<CitaConNombre>> obtenerCitasConNombrePersona() async {
+    final db = await DB._conectarDB();
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+        'SELECT C.IDCITA, C.LUGAR, C.FECHA, C.HORA, C.ANOTACIONES, C.IDPERSONA, P.NOMBRE AS NOMBREPERSONA '
+        'FROM CITA C '
+        'INNER JOIN PERSONA P ON C.IDPERSONA = P.IDPERSONA');
+
+    return List.generate(maps.length, (i) {
+      return CitaConNombre(
+        idcita: maps[i]['IDCITA'],
+        lugar: maps[i]['LUGAR'],
+        fecha: maps[i]['FECHA'],
+        hora: maps[i]['HORA'],
+        anotaciones: maps[i]['ANOTACIONES'],
+        idpersona: maps[i]['IDPERSONA'],
+        nombrepersona: maps[i]['NOMBREPERSONA'],
+      );
+    });
+  }
 
   static Future<void> eliminarPersona(int id) async {
-  final db = await DB._conectarDB();
-  final rowsDeleted = await db.delete('PERSONA', where: 'IDPERSONA = ?', whereArgs: [id]);
-  print('Eliminados $rowsDeleted');
-}
+    final db = await DB._conectarDB();
+    await db.delete('PERSONA', where: 'IDPERSONA = ?', whereArgs: [id]);
+  }
 
   static Future<void> eliminarCita(int id) async {
     final db = await DB._conectarDB();
-    final rowsDeleted = await db.delete(
-        'CITA', where: 'IDCITA = ?', whereArgs: [id]);
-    print('Eliminados $rowsDeleted');
+    await db.delete('CITA', where: 'IDCITA = ?', whereArgs: [id]);
   }
 
   static Future<void> actualizarPersona(Persona p) async {
@@ -76,11 +94,6 @@ class DB {
 
   static Future<void> actualizarCita(Cita c) async {
     final db = await DB._conectarDB();
-    await db.update(
-        'CITA', c.toJSON(), where: 'IDCITA = ?', whereArgs: [c.IDCITA]);
+    await db.update('CITA', c.toJSON(), where: 'IDCITA = ?', whereArgs: [c.idcita]);
   }
-
-
 }
-
-

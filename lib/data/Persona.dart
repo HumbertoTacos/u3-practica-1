@@ -8,8 +8,8 @@ class Persona{
       'TELEFONO': telefono,
     };
   }
-  String IDPERSONA;
+  int ? IDPERSONA;
   String nombre;
   String telefono;
-  Persona(this.nombre, this.telefono, this.IDPERSONA);
+  Persona({required this.nombre, required this.telefono, this.IDPERSONA});
   }
